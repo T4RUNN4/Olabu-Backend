@@ -36,6 +36,20 @@ async function run() {
       res.send("App is running");
     });
 
+    app.get("/wallboards", async (req: Request, res: Response) => {
+      const wallboards = await wallboardsCollection.find().toArray();
+      res.json(wallboards);
+    });
+
+    app.get("/wallboards/:id", async (req: Request<{ id: string }>, res: Response) => {
+      const { id } = req.params;
+
+      const wallboards = await wallboardsCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      res.json(wallboards);
+    });
+
     app.post("/wallboards/add", async (req: Request, res: Response) => {
       const wallboardDetails = req.body;
       const ret = await wallboardsCollection.insertOne(wallboardDetails);
