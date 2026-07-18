@@ -36,6 +36,13 @@ async function run() {
       res.send("App is running");
     });
 
+    app.post("/wallboards/add", async (req: Request, res: Response) => {
+      const wallboardDetails = req.body;
+      const ret = await wallboardsCollection.insertOne(wallboardDetails);
+
+      res.json(ret);
+    });
+
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
