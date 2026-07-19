@@ -57,6 +57,15 @@ async function run() {
       res.json(ret);
     });
 
+    app.delete("/wallboards/delete/:id", async (req: Request<{ id: string}>, res: Response) => {
+      const { id } = req.params;
+      const ret = await wallboardsCollection.deleteOne({
+        _id: new ObjectId(id),
+      })
+
+      res.json(ret);
+    })
+
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
