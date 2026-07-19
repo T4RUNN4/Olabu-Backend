@@ -66,6 +66,11 @@ async function run() {
       res.json(ret);
     });
 
+    app.get("/reviews", async (req: Request, res: Response) => {
+      const reviews = await reviewsCollection.find().toArray();
+      res.json(reviews);
+    });
+
     app.post("/reviews/add", async (req: Request, res: Response) => {
       const review = req.body;
       const ret = await reviewsCollection.insertOne(review);
