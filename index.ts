@@ -41,6 +41,18 @@ async function run() {
       res.json(wallboards);
     });
 
+    app.get("/wallboards/featured", async (req: Request, res: Response) => {
+      const wallboards = await wallboardsCollection.aggregate([
+        {
+          $sample: {
+            size: 2,
+          },
+        },
+      ]).toArray();
+      res.json(wallboards);
+    })
+
+
     app.get("/wallboards/:id", async (req: Request<{ id: string }>, res: Response) => {
       const { id } = req.params;
 
