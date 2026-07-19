@@ -83,6 +83,19 @@ async function run() {
       res.json(reviews);
     });
 
+    app.get("/reviews/featured", async (req: Request, res: Response) => {
+      const reviews = await reviewsCollection
+        .aggregate([
+          {
+            $sample: {
+              size: 1,
+            },
+          },
+        ])
+        .toArray();
+      res.json(reviews);
+    });
+
     app.post("/reviews/add", async (req: Request, res: Response) => {
       const review = req.body;
       const ret = await reviewsCollection.insertOne(review);
