@@ -64,7 +64,14 @@ async function run() {
       })
 
       res.json(ret);
-    })
+    });
+
+    app.post("/reviews/add", async (req: Request, res: Response) => {
+      const review = req.body;
+      const ret = await reviewsCollection.insertOne(review);
+
+      res.json(ret);
+    });
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
