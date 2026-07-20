@@ -1,9 +1,11 @@
-import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import cors from "cors";
-import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
-
 dotenv.config();
+
+
+import cors from "cors";
+import express, { Request, Response } from "express";
+import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import { getGroqClient } from "./services/groq";
 
 const app = express();
 app.use(express.json());
@@ -135,6 +137,29 @@ async function run() {
       const ret = await reviewsCollection.insertOne(review);
 
       res.json(ret);
+    });
+
+    app.post("/chat", async (req, res) => {
+      const groq = getGroqClient();
+      const { message } = req.body;
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI shopping assistant.",
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      });
+
+      res.json({
+        reply: completion.choices[0].message.content,
+      });
     });
 
     app.listen(PORT, () => {
