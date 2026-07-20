@@ -36,31 +36,62 @@ async function run() {
       res.send("App is running");
     });
 
-    app.get("/wallboards", async (req: Request, res: Response) => {
-      const wallboards = await wallboardsCollection.find().toArray();
-      res.json(wallboards);
-    });
+    app.get(
+      "/wallboards",
+      async (
+        req: Request<{}, {}, {}, { q?: string; by?: string }>,
+        res: Response,
+      ) => {
+        const { q = "", by = "name" } = req.query;
+        let filter = {};
+
+        if (q) {
+          if (by === "tags") {
+            filter = {
+              tags: {
+                $regex: q,
+                $options: "i",
+              },
+            };
+          } else {
+            filter = {
+              [by]: {
+                $regex: q,
+                $options: "i",
+              },
+            };
+          }
+        }
+
+        const wallboards = await wallboardsCollection.find(filter).toArray();
+        res.json(wallboards);
+      },
+    );
 
     app.get("/wallboards/featured", async (req: Request, res: Response) => {
-      const wallboards = await wallboardsCollection.aggregate([
-        {
-          $sample: {
-            size: 2,
+      const wallboards = await wallboardsCollection
+        .aggregate([
+          {
+            $sample: {
+              size: 2,
+            },
           },
-        },
-      ]).toArray();
-      res.json(wallboards);
-    })
-
-
-    app.get("/wallboards/:id", async (req: Request<{ id: string }>, res: Response) => {
-      const { id } = req.params;
-
-      const wallboards = await wallboardsCollection.findOne({
-        _id: new ObjectId(id),
-      });
+        ])
+        .toArray();
       res.json(wallboards);
     });
+
+    app.get(
+      "/wallboards/:id",
+      async (req: Request<{ id: string }>, res: Response) => {
+        const { id } = req.params;
+
+        const wallboards = await wallboardsCollection.findOne({
+          _id: new ObjectId(id),
+        });
+        res.json(wallboards);
+      },
+    );
 
     app.post("/wallboards/add", async (req: Request, res: Response) => {
       const wallboardDetails = req.body;
@@ -69,14 +100,17 @@ async function run() {
       res.json(ret);
     });
 
-    app.delete("/wallboards/delete/:id", async (req: Request<{ id: string}>, res: Response) => {
-      const { id } = req.params;
-      const ret = await wallboardsCollection.deleteOne({
-        _id: new ObjectId(id),
-      })
+    app.delete(
+      "/wallboards/delete/:id",
+      async (req: Request<{ id: string }>, res: Response) => {
+        const { id } = req.params;
+        const ret = await wallboardsCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
 
-      res.json(ret);
-    });
+        res.json(ret);
+      },
+    );
 
     app.get("/reviews", async (req: Request, res: Response) => {
       const reviews = await reviewsCollection.find().toArray();
