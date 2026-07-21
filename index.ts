@@ -27,6 +27,12 @@ const client = new MongoClient(URI, {
   },
 });
 
+type GenerateContentRequest = {
+  name: string;
+  code: string;
+  length?: "short" | "medium" | "long";
+};
+
 async function run() {
   try {
     const db = client.db("olabu");
@@ -91,6 +97,88 @@ async function run() {
           _id: new ObjectId(id),
         });
         res.json(wallboards);
+      },
+    );
+
+    app.post(
+      "/wallboards/generate-content",
+      async (req: Request<{}, {}, GenerateContentRequest>, res: Response) => {
+        try {
+          const groq = getGroqClient();
+
+          const { name, code, length = "medium" } = req.body;
+
+          const lengthGuide = {
+            short: "Write a very short description between 15-20 words.",
+            medium:
+              "Write a balanced ecommerce description between 25-35 words.",
+            long: "Write a detailed marketing description between 40-60 words.",
+          };
+
+          if (!name) {
+            return res.status(400).json({
+              message: "Wallboard name is required",
+            });
+          }
+
+          const prompt = `
+You are OLABU's product content writer.
+
+OLABU sells premium customized PVC wallboards.
+
+Generate product marketing content for a new wallboard.
+
+Product name:
+${name}
+
+Product code:
+${code}
+
+Description length requirement:
+${lengthGuide[length] || lengthGuide.medium}
+
+Return ONLY valid JSON.
+
+Format:
+
+{
+  "description": "A short attractive product description under 25 words",
+  "tags": ["tag1", "tag2", "tag3"]
+}
+
+Rules:
+- Do not mention fake features.
+- Do not mention prices.
+- Tags should describe the design/theme/player/team.
+- Description should sound like an ecommerce product description.
+`;
+
+          const completion = await groq.chat.completions.create({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              {
+                role: "system",
+                content: prompt,
+              },
+            ],
+            temperature: 0.5,
+          });
+
+          const content = completion.choices[0].message.content || "{}";
+
+          const generated = JSON.parse(content);
+
+          res.json({
+            description: generated.description,
+            tags: generated.tags,
+          });
+        } catch (error) {
+          console.error(error);
+
+          res.status(500).json({
+            message: "AI generation failed",
+          });
+        }
       },
     );
 
