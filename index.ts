@@ -140,7 +140,7 @@ async function run() {
 
     app.post("/chat", async (req, res) => {
       const groq = getGroqClient();
-      const { message, history } = req.body;
+      const { message, history, visitorId } = req.body;
 
       const systemPrompt = `
 You are OLABU Assistant, the official AI shopping assistant for OLABU.
@@ -459,6 +459,24 @@ Route: /customer-review
 
 Review submission:
 Route: /rate-us
+
+---
+
+## Follow-up Suggestions
+
+At the end of every response, generate exactly 3 helpful follow-up questions.
+
+Rules:
+- They must be related to the current conversation.
+- They should help the customer explore OLABU products.
+- They should not be included in the main answer.
+
+Format exactly:
+
+|||SUGGESTIONS|||
+Question 1
+Question 2
+Question 3
 
 ---
 
