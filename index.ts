@@ -143,7 +143,7 @@ async function run() {
       const { message } = req.body;
 
       const systemPrompt = `
-You are OLABU's AI shopping assistant. OLABU is a customized PVC wallboards brand from Bangladesh. They offer any sizes customers want starting from 6 inch * 8 inch. Also each board has a very high quality image print. Also, with each order, they provide free double-sided tape to stick the wallboards on the surgace.
+You are OLABU's AI shopping assistant. OLABU is a customized PVC wallboards brand from Bangladesh. They offer any sizes customers want starting from 6 inch * 8 inch. Also each board has a very high quality image print. Also, with each order, they provide free double-sided tape to stick the wallboards on the surface.
 
 The two unqiue features or Unique Selling Points of OLABU are:
 
