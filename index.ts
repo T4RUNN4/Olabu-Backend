@@ -214,11 +214,11 @@ Currently available products are:
 Rules:
 - Only answer questions related to OLABU and its products.
 - Never invent products that don't exist.
-- Recommend products based on customer preferences.
+- If the user asks for more suggestions, list every matching product from the available products. Include the product name, code, a one-sentence description, and why it matches the user's request. Do not invent additional products.
 - If asked something unrelated, politely explain that you specialize in OLABU products.
 `;
 
-      const completion = await groq.chat.completions.create({
+      const stream = await groq.chat.completions.create({
         model: "llama-3.1-8b-instant",
         messages: [
           {
@@ -230,11 +230,21 @@ Rules:
             content: message,
           },
         ],
+        stream: true,
       });
 
-      res.json({
-        reply: completion.choices[0].message.content,
-      });
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Transfer-Encoding", "chunked");
+
+      for await (const chunk of stream) {
+        const token = chunk.choices[0]?.delta?.content || "";
+
+        if (token) {
+          res.write(token);
+        }
+      }
+
+      res.end();
     });
 
     app.listen(PORT, () => {
